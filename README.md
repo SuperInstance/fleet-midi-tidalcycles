@@ -12,7 +12,7 @@
 
 ---
 
-Every ternary {-1, 0, +1} strategy vector maps to a percussive cycle: assertion → kick, sustain → hat, opposition → snare. Euclidean rhythm generator, density analysis, and I2I bottle transport turn agent states into rhythms the fleet can feel.
+Every ternary {-1, 0, +1} strategy vector maps to a percussive cycle: assertion → kick, sustain → hat, opposition → snare. Euclidean rhythm generator, density analysis, and I2I transport turn agent states into percussive flows.
 
 ---
 
@@ -32,22 +32,58 @@ git clone https://github.com/SuperInstance/fleet-midi-tidalcycles.git
 ## 🚀 Quick Start
 
 ```bash
-# see Getting Started below
+# Generate pattern from ternary vector:
+curl -X POST localhost:3002/pattern \
+  -H "Content-Type: application/json" \
+  -d "{\"agent_id\":\"scout\",\"ternary_vector\":[1,0,-1,1,0,-1,1,1]}"
+
+# Python directly:
+from lib.pattern_engine import vector_to_pattern
+print(vector_to_pattern([1,0,-1,1], "test"))
 ```
 
 ## 🏗️ Architecture
 
 ```
-Coming soon
+┌─────────────────────────────────────────────────────┐
+│                                                     │
+│   ternary vector: [1, 0, -1, 1, 0, -1, 1, 1]       │
+│         │                                           │
+│         ▼                                           │
+│   ┌──────────────────┐                              │
+│   │ Pattern Engine   │───▶ s "bd", s "hh", s "sn"  │
+│   │ euclidean(k=4,n=8)──▶ e(4, 8)                  │
+│   │ density=0.625    │───▶ fast 2                  │
+│   └───────┬──────────┘                              │
+│           │                                         │
+│           ▼                                         │
+│   ┌──────────────┐    ┌──────────────┐              │
+│   │ FastAPI:3002 │───▶│ I2I Bridge   │              │
+│   │              │    │ → Harbor     │              │
+│   └──────────────┘    └──────────────┘              │
+│                                                     │
+│   +1 → kick (bd)   0 → hat (hh)   -1 → snare (sn)  │
+└─────────────────────────────────────────────────────┘
 ```
 
 ## 📡 API
 
-See source code for endpoints.
+### POST /pattern
+Convert a ternary agent state vector to a TidalCycles rhythmic pattern.
+
+```json
+{"agent_id": "scout", "ternary_vector": [1,0,-1,1]}
+```
+→ Returns pattern string, Euclidean rhythm, speed modifier, and executable Tidal code.
+
+### GET /health
+```json
+{"status": "ok", "service": "rhythmica"}
+```
 
 ## 🧪 Beta Tested
 
-Part of the [SuperInstance MIDI Fleet](https://github.com/SuperInstance/construct-coordination/blob/main/FLEET_MIDI.md). Zeroshot-verified on every push via CI.
+Part of the [SuperInstance MIDI Fleet](https://github.com/SuperInstance/construct-coordination/blob/main/FLEET_MIDI.md). Every push verified via CI — zeroshot tests ensure zero-config operation out of the box.
 
 ## 🤝 Related
 
